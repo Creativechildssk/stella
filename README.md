@@ -4,7 +4,7 @@ A photography community — inspiration feed, photograph of the day, missions, s
 
 Browse as a guest. Sign in (Google, X, or email) to give stars, follow, save, upload, and comment. The first person to create an account becomes the sole superadmin.
 
-**Live repo:** [github.com/Creativechildssk/stella](https://github.com/Creativechildssk/stella)
+**Repo:** [github.com/Creativechildssk/stella](https://github.com/Creativechildssk/stella)
 
 ## Superadmin
 
@@ -18,8 +18,12 @@ There is one superadmin seat. That person can:
 ## Stack
 
 - TanStack Start + React 19
-- Postgres (Neon in production, PGLite locally)
+- Postgres (Neon in production, PGLite in local preview)
 - Better Auth (Google, X, email/password)
+
+## Mobile
+
+The site is built mobile-first and installs as a PWA.
 
 ## Local
 
@@ -28,7 +32,16 @@ npm install
 npm run dev
 ```
 
-Copy `.env.example` only if you are running against real Postgres. Local preview uses embedded PGLite.
+Copy `.env.example` to `.env` only if you are running against a real Postgres instance. Local preview uses embedded PGLite and does not need it.
+
+## Deploy
+
+Set these on the host (Vercel or similar):
+
+- `DATABASE_URL` — Postgres connection string
+- Auth credentials for Google / X (optional; email/password works without them)
+
+`npm run build` applies migrations, then start the production server.
 
 ## License
 
