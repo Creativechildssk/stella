@@ -1,0 +1,68 @@
+# Stella — app + Postgres
+#
+#   docker compose up --build
+#
+# First person to create an account becomes the sole superadmin.
+# Override secrets in a local `.env` (see `.env.example`).
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: stella
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-stella}
+      POSTGRES_DB: stella
+    volumes:
+      - stella_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stella -d stella"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    networks:
+      - stella
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${STELLA_PORT:-3000}:3000"
+    environment:
+      DATABASE_URL: postgres://stella:${POSTGRES_PASSWORD:-stella}@db:5432/stella
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-stella-dev-only-change-me-before-production-32b}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+      VITE_AUTH_ENABLED: "true"
+      HOST: 0.0.0.0
+      PORT: "3000"
+      NITRO_HOST: 0.0.0.0
+      NITRO_PORT: "3000"
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      TWITTER_CLIENT_ID: ${TWITTER_CLIENT_ID:-}
+      TWITTER_CLIENT_SECRET: ${TWITTER_CLIENT_SECRET:-}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 40s
+      retries: 5
+    networks:
+      - stella
+
+networks:
+  stella:
+
+volumes:
+  stella_pg:
